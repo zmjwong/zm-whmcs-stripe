@@ -29,7 +29,7 @@ try {
 	$event = Stripe_Event::retrieve($event_id);
 
 	if($event->type == 'charge.succeeded') {
-	
+
 		// Pull invoice ID from Stripe description
 		if ($event->data->object->invoice != "") { // This is an invoice/subscription payment, get the WHMCS invoice ID
 			$invoice_id = $event->data->object->invoice;
@@ -39,22 +39,22 @@ try {
 		} else { // This is a one time payment
 			$description = $event->data->object->description;
 		}
-		
+
 		// Get the invoice ID from the transaction
 		$start = strpos($description, "#") + strlen("#");
 		$end = strpos($description, " ", $start);
 		$invoiceid = substr($description, $start, $end - $start);
-		
+
 		$transid = $event->data->object->id;
-		
+
 		$amount_cents = $event->data->object->amount;
 		$amount = $amount_cents / 100;
-		
+
 		$fee_cents = floatval($event->data->object->fee);
 		$fee = $fee_cents / 100;
-		
+
 		$paid = $event->data->object->paid;
-		
+
 	}
 
 } catch (Exception $e) {
@@ -67,7 +67,7 @@ checkCbTransID($transid); # Checks transaction number isn't already in the datab
 
 if ($paid == true) {
 
-    # Successful 
+    # Successful
     addInvoicePayment($invoiceid,$transid,$amount,$fee,$gatewaymodule); # Apply Payment to Invoice: invoiceid, transactionid, amount paid, fees, modulename
 	logTransaction($GATEWAY["name"],$event,"Successful"); # Save to Gateway Log: name, data array, status
 } else {
